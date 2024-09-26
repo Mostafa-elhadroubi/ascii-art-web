@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>ASCII-ART-WEB</h1>
+    <textarea name="" id="textarea" cols="40" rows="10"></textarea>
+    <div class="checkbox">
+        <input type="radio" name="banner" id=""  checked>standard
+        <input type="radio" name="banner" id="">shadow
+        <input type="radio" name="banner" id="">thinkertoy
+    </div>
+    <div class="btn">
+        <button type="submit">Submit</button>
+    </div>
+    <h2 class="a">Result:</h2>
+    <div class="result"></div>
+    <h1>{{.Name}}</h1>
+    <p>{{.Age}}</p>
+    <script>
+        const textarea = document.querySelector('#textarea');
+        const result = document.querySelector('.result')
+        const a = document.querySelector('.a')
+        a.addEventListener('click', () => {
+
+            result.innerHTML = textarea.value
+        })
+    </script>
+</body>
+</html>
