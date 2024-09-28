@@ -7,19 +7,25 @@
 </head>
 <body>
     <h1>ASCII-ART-WEB</h1>
-    <textarea name="" id="textarea" cols="40" rows="10"></textarea>
-    <div class="checkbox">
-        <input type="radio" name="banner" id=""  checked>standard
-        <input type="radio" name="banner" id="">shadow
-        <input type="radio" name="banner" id="">thinkertoy
-    </div>
-    <div class="btn">
-        <button type="submit">Submit</button>
-    </div>
+
+    <form action="/process" method="post">
+        <textarea name="data" id="textarea" cols="40" rows="10" required></textarea>
+        <div class="checkbox">
+            <input type="radio" name="banner" id="" value="standard" checked>standard
+            <input type="radio" name="banner" id="" value="shadow">shadow
+            <input type="radio" name="banner" id="" value="thinkertoy">thinkertoy
+        </div>
+        <div class="btn">
+            <button type="submit" style="padding: 10px; background: blue; color: white; font-size: 20px; 
+            border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;">Submit</button>
+        </div>
+    </form>
+
     <h2 class="a">Result:</h2>
-    <div class="result"></div>
-    <h1>{{.Name}}</h1>
-    <p>{{.Age}}</p>
+    <div class="result">
+        <pre>{{.Res}}</pre>
+    </div>
+
     <script>
         const textarea = document.querySelector('#textarea');
         const result = document.querySelector('.result')
