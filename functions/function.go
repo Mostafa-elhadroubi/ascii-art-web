@@ -1,77 +1,61 @@
 package function
 
 import (
-	"fmt"
+	"bufio"
+
 	"os"
 	"strings"
 )
 
-func CheckFormatCommand() bool {
-	arg := os.Args
-	if len(arg) != 3 {
-		fmt.Println("Usage: go run . [STRING] [BANNER]")
-		fmt.Println("EX: go run . something standard")
-		return false
-	}
-	if arg[2]  != "standard"   && arg[2] != "shadow" && arg[2] != "thinkertoy" {
-		fmt.Println("Invalid banner type. Please use: standard, shadow, thinkertoy")
-		return false
-	}
-	for _, val := range os.Args[1] {
-		if val < 32 || val > 126 {
-			fmt.Println("Invalid string. Try to insert an printable character!")
-			return false
-		}
-	}
-	return true
-}
-
-func ReadArg() (string, string){
-	banner := os.Args[1]
-	t := os.Args[2]
-	text, err := os.ReadFile("./banners/"+banner+".txt")
-	if err != nil {
-		fmt.Println("The error is => ", err)
-	}
-	return string(text), t
-}
-
-func TraitmentData(bnr string,  arg string) string {
+func TraitmentData(bnr string, arg string) string {
 	banner := bnr
-	// "../banners/"
-	text, err := os.ReadFile("./banners/"+banner+".txt")
+	fileName := "./banners/" + banner + ".txt"
+	// Open the ASCII art file
+	file, err := os.Open(fileName)
 	if err != nil {
-		fmt.Println("The error is => ", err)
+		return "Error opening the file"
 	}
-	
-	arrData := strings.Split(string(text), "\n")
-	fmt.Printf("%#v\n", arg)
-	arg = strings.ReplaceAll(arg, "\\n", "\n")
-	fmt.Printf("%#v\n", arg)
-	if arg == "\n"  {
-		return ""
+	defer file.Close()
+	var asciiArt []string
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		asciiArt = append(asciiArt, scanner.Text())
 	}
-	res := ""
-	count := 0
-	words := strings.Split(arg, "\n")
-	for k := 0; k < len(words); k++ {
-		if words[k] == "" {
-			res += "\n"
-			count++
+	if err := scanner.Err(); err != nil {
+		return "Error reading the file"
+	}
+
+	var result string
+	lines := strings.Split(arg, "\n")
+	for _, line := range lines {
+		if line == "" {
+			result += "\n"
 			continue
 		}
-		
-	for i := 0; i < 8; i++ {
-		for j := 0; j < len(words[k]); j++ {
-			
-				start := (int(words[k][j]-' ') * 9) + i + 1
-				res +=  arrData[start]
+		// Iterate over each row of the ASCII art (0 to 7, for the 8 rows)
+		for i := 1; i <= 8; i++ {
+			for _, r := range line {
+				// Ensure the character is within the valid ASCII range
+				if r < 32 || r > 126 {
+					return "Please enter a valid character between ascii code 32 and 126"
+				}
+				index := 9*(int(r)-32) + i
+				result += asciiArt[index]
 			}
-			res +=  "\n"
+			result += "\n" // Add newline after finishing the current row of the line
 		}
 	}
-	if count == len(words) {
-		return res[:len(res)-1]
+	return result
+}
+
+func BannerExists(banner string) bool {
+	// Check if the provided banner exists (this is a placeholder function)
+	// For example, compare the banner string to a list of supported banners
+	supportedBanners := []string{"standard", "shadow", "thinkertoy"}
+	for _, b := range supportedBanners {
+		if banner == b {
+			return true
+		}
 	}
-	return res
+	return false
 }

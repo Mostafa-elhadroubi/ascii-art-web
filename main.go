@@ -2,12 +2,13 @@ package main
 
 import (
 	"ascii-art/functions"
-	"html/template"
-	"log"
-	"net/http"
 	"fmt"
+	"html/template"
+	"net/http"
+
 	"strings"
 )
+
 
 type Data struct {
 	Str string
@@ -15,50 +16,66 @@ type Data struct {
 	Res string
 	A	template.HTML
 }
-type Test struct {
-	Name string
-	Age int
-}
-// func indexHandler(w http.ResponseWriter, r *http.Request) {
-// 	io.WriteString(w, "Mostafa")
-// }
+
 
 func processHandler(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("home.html")
+	temp, err := template.ParseFiles("home.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
-	var  d Data
-	d.Str = r.FormValue("data")
-	d.Banner = r.FormValue("banner")
-	log.Println("Received Data:", d.Str)
-	d.Str = strings.ReplaceAll(d.Str, "\r\n", "\\n")
-	d.Str = strings.ReplaceAll(d.Str, "\n", "\\n")
-	d.Res = function.TraitmentData(d.Banner, d.Str)
-	d.A = template.HTML(strings.ReplaceAll(d.Res, "\n", "<br>"))
-	t.Execute(w, d)
-	// if err := t.Execute(w, d); err != nil {
-    //     http.Error(w, err.Error(), http.StatusInternalServerError)
-    // }
-	// io.WriteString(w, res)
+
+	var data Data
+	data.Str = r.FormValue("data")
+	if len(data.Str) > 200 {
+		http.Error(w, "Input data exceeds 200 characters limit.", http.StatusBadRequest)
+		return
+	}
+
+	data.Banner = r.FormValue("banner")
+	if !function.BannerExists(data.Banner) {
+		http.Error(w, "Banner not found", http.StatusNotFound)
+		return
+	}
+
+	data.Str = strings.ReplaceAll(data.Str, "\r\n", "\n")
+	
+	data.Res = function.TraitmentData(data.Banner, data.Str)
+	if data.Res == "" { // If TraitmentData failed to generate the result
+		http.Error(w, "Internal Server Error: Failed to process data.", http.StatusInternalServerError)
+		return
+	}
+	data.A = template.HTML(strings.ReplaceAll(data.Res, "\n", "<br>"))
+
+	if err := temp.Execute(w, data); err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 }
 
-
-
-func ageHandler(w http.ResponseWriter, r *http.Request) {
-	a := Test{Name: "Mostafa", Age: 27}
+func pageHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		http.Error(w, "Error 404 : Not Found", http.StatusNotFound)
+		return
+	}
 	t, err := template.ParseFiles("home.html")
 	if err != nil {
-		fmt.Println(err)
-		http.Error(w, err.Error()/*convert the error into string*/, http.StatusInternalServerError)
+		http.Error(w, "Template not found", http.StatusNotFound)
+		return
 	}
-	t.Execute(w, a)
+
+	if err := t.Execute(w, nil); err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 }
-
-
 func main() {
-	// http.HandleFunc("/", indexHandler)
-	http.HandleFunc("/home", ageHandler)
-	http.HandleFunc("/process", processHandler)
-	http.ListenAndServe(":8080", nil)
+
+	http.HandleFunc("/", pageHandler)
+	http.HandleFunc("/ascii-art", processHandler)
+	fmt.Println("Server is running at http://localhost:8088")
+	err := http.ListenAndServe(":8088", nil)
+	if err != nil {
+		fmt.Println("Error starting server:", err)
+	}
 }
